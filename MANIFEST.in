@@ -1,1 +1,9 @@
 include requirements.txt
+include meloplus/text/opencpop-strict.txt
+include meloplus/text/*.txt
+include meloplus/text/*.rep
+include meloplus/text/*.dict
+include meloplus/text/*.pickle
+include meloplus/text/english_utils/*
+include meloplus/text/fr_phonemizer/*
+include meloplus/text/es_phonemizer/*

@@ -51,4 +51,19 @@ setuptools.setup(
     url='https://github.com/kadirnar/meloplus',
     install_requires=INSTALL_REQUIRES,
     packages=setuptools.find_packages(),
+    package_data={
+        'meloplus.text': [
+            'opencpop-strict.txt',
+            'cmudict.rep',
+            'cmudict_cache.pickle',
+            '*.txt',
+            '*.rep',
+            '*.dict',
+            '*.pickle'
+        ],
+        'meloplus.text.english_utils': ['*.txt', '*.dict'],
+        'meloplus.text.fr_phonemizer': ['*.txt', '*.dict'],
+        'meloplus.text.es_phonemizer': ['*.txt', '*.dict'],
+    },
+    include_package_data=True,
 )
