@@ -3,7 +3,7 @@
     MeloPlus: Advanced Python Library for MeloTts
 </h2>
 <div>
-    <img width="500" alt="teaser" src="doc/melo_logo.png">
+    <img width="500" alt="teaser" src="doc/logo.png">
 </div>
 <div>
     <a href="https://pypi.org/project/meloplus" target="_blank">
