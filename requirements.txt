@@ -2,7 +2,7 @@ txtsplit
 torch
 torchaudio
 cached_path
-transformers==4.27.4
+# transformers
 num2words==0.5.12
 unidic_lite==1.0.8
 unidic==1.1.0
