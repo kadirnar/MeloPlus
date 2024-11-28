@@ -45,6 +45,7 @@ jobs:
 
         # Test model inference
         print('Running inference...')
-        audio = model.inference(text, speaker_id=0, speed=1.0)
+        output_path = 'en-us.wav'
+        model.tts_to_file(text, speaker_ids['EN-US'], output_path, speed=1.0)
         print('Inference successful!')
         "
