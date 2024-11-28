@@ -25,5 +25,6 @@ jieba==0.42.1
 gradio
 langid==1.1.6
 tqdm
-tensorboard==2.16.2
+tensorboard
 loguru==0.7.2
+botocore
