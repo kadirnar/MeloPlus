@@ -28,3 +28,4 @@ tqdm
 tensorboard
 loguru==0.7.2
 botocore
+pre-commit
