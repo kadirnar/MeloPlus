@@ -53,12 +53,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     package_data={
         'meloplus.text': [
-            'opencpop-strict.txt',
-            'cmudict.rep',
-            'cmudict_cache.pickle',
-            '*.txt',
-            '*.rep',
-            '*.dict',
+            'opencpop-strict.txt', 'cmudict.rep', 'cmudict_cache.pickle', '*.txt', '*.rep', '*.dict',
             '*.pickle'
         ],
         'meloplus.text.english_utils': ['*.txt', '*.dict'],
