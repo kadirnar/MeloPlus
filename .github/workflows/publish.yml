@@ -2,7 +2,7 @@ name: Publish to PyPI
 
 on:
   release:
-    types: [created]
+    types: [created, edited]
 
 jobs:
   deploy:
@@ -13,16 +13,6 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
-    - name: Update version
-      run: |
-        # Get version from release tag
-        VERSION=${GITHUB_REF#refs/tags/v}
-        # Update version in __init__.py
-        sed -i "s/__version__ = .*/__version__ = '${VERSION}'/" meloplus/__init__.py
-        # Commit the version update
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git commit -m "Update version to ${VERSION}" -a
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
