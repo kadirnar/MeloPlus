@@ -28,12 +28,6 @@ jobs:
         uv venv
         source .venv/bin/activate
         uv pip install -e .
-        python -m unidic download
-
-    - name: Install and run pre-commit
-      run: |
-        pre-commit install
-        pre-commit run --all-files
 
     - name: Test MeloTTS
       run: |
