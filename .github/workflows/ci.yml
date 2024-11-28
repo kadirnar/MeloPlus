@@ -24,10 +24,10 @@ jobs:
     - name: Install dependencies
       run: |
         pip install uv
-        uv pip install pip
         uv venv
         source .venv/bin/activate
-        pip install -e .
+        uv pip install pip
+        uv pip install -e .
 
 
     - name: Test MeloTTS
