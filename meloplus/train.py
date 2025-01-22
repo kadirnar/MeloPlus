@@ -354,7 +354,8 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
         optim_d.zero_grad()
         scaler.scale(loss_disc_all).backward()
         scaler.unscale_(optim_d)
-        grad_norm_d = commons.clip_grad_value_(net_d.parameters(), None)
+        # grad_norm_d = commons.clip_grad_value_(net_d.parameters(), None) # check
+        grad_norm_d = commons.clip_grad_value_(net_d.parameters(), 200)
         scaler.step(optim_d)
 
         with autocast(enabled=hps.train.fp16_run):
@@ -376,7 +377,9 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
         optim_g.zero_grad()
         scaler.scale(loss_gen_all).backward()
         scaler.unscale_(optim_g)
-        grad_norm_g = commons.clip_grad_value_(net_g.parameters(), None)
+        # grad_norm_g = commons.clip_grad_value_(net_g.parameters(), None) # check
+        grad_norm_g = commons.clip_grad_value_(net_g.parameters(), 500)
+
         scaler.step(optim_g)
         scaler.update()
 
