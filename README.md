@@ -17,6 +17,7 @@
 
 ```bash
 pip install meloplus
+python -m unidic download
 ```
 
 ## 🎙️ Usage
