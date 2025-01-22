@@ -7,7 +7,7 @@ from pythainlp.tokenize import word_tokenize
 from pythainlp.transliterate import romanize
 from pythainlp.util import normalize as thai_normalize
 from pythainlp.util import thai_to_eng, eng_to_thai
-from melo.text.thai_dictionary import english_dictionary, etc_dictionary
+from meloplus.text.thai_dictionary import english_dictionary, etc_dictionary
 from collections import defaultdict
 import logging
 
