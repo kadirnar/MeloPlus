@@ -1,7 +1,7 @@
 import re
 import pytest
 import torch
-from melo.text.thai import (
+from meloplus.text.thai import (
     normalize,
     word_tokenize,
     thai_text_to_phonemes,
@@ -9,7 +9,7 @@ from melo.text.thai import (
     g2p,
     get_bert_feature,
 )
-from melo.text.korean import (
+from meloplus.text.korean import (
     text_normalize as k_text_normalize,
     get_bert_feature as k_get_bert_feature,
     g2p as k_g2p,
