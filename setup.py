@@ -56,9 +56,9 @@ setuptools.setup(
             'opencpop-strict.txt', 'cmudict.rep', 'cmudict_cache.pickle', '*.txt', '*.rep', '*.dict',
             '*.pickle'
         ],
-        'meloplus.text.english_utils': ['*.txt', '*.dict'],
-        'meloplus.text.fr_phonemizer': ['*.txt', '*.dict'],
-        'meloplus.text.es_phonemizer': ['*.txt', '*.dict'],
+        'meloplus.text.fr_phonemizer': ['*.txt'],
+        'meloplus.text.es_phonemizer': ['*.txt'],
+        'meloplus.text': ['*.tsv', '*.txt'],
     },
     include_package_data=True,
 )

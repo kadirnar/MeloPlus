@@ -762,6 +762,24 @@ class SynthesizerTrn(nn.Module):
             num_languages=num_languages,
             num_tones=num_tones,
         )
+        self.enc_p = TextEncoder(
+            219,  # Initialize with the original symbol size
+            inter_channels,
+            hidden_channels,
+            filter_channels,
+            n_heads,
+            n_layers,
+            kernel_size,
+            p_dropout,
+            gin_channels=self.enc_gin_channels,
+            num_languages=num_languages,
+            num_tones=num_tones,
+        )
+        if n_vocab != 219:
+            old_embeddings = self.enc_p.emb
+            new_num_tokens = n_vocab
+            self.enc_p.emb = self.get_resized_embeddings(old_embeddings, new_num_tokens)
+
         self.dec = Generator(
             inter_channels,
             resblock,
@@ -811,6 +829,23 @@ class SynthesizerTrn(nn.Module):
         else:
             self.ref_enc = ReferenceEncoder(spec_channels, gin_channels, layernorm=norm_refenc)
         self.use_vc = use_vc
+
+    def get_resized_embeddings(self, old_embeddings, new_num_tokens):
+        old_num_tokens, old_embedding_dim = old_embeddings.weight.size()
+        if old_num_tokens == new_num_tokens:
+            return old_embeddings
+
+        if not isinstance(old_embeddings, nn.Embedding):
+            raise TypeError(
+                f"Old embeddings are of type {type(old_embeddings)}, which is not an instance of {nn.Embedding}. "
+                f"You should either use a different resize function or make sure that `old_embeddings` are an instance of {nn.Embedding}."
+            )
+
+        new_embeddings = nn.Embedding(new_num_tokens, old_embedding_dim).to(
+            device=old_embeddings.weight.device, dtype=old_embeddings.weight.dtype)
+        new_embeddings.weight.data[:old_num_tokens, :] = old_embeddings.weight.data[:old_num_tokens, :]
+
+        return new_embeddings
 
     def forward(self, x, x_lengths, y, y_lengths, sid, tone, language, bert, ja_bert):
         if self.n_speakers > 0:

@@ -1,6 +1,6 @@
 import copy
 
-from . import chinese, chinese_mix, cleaned_text_to_sequence, english, french, japanese, korean, spanish
+from . import chinese, chinese_mix, cleaned_text_to_sequence, english, french, japanese, korean, spanish, thai
 
 language_module_map = {
     "ZH": chinese,
@@ -10,7 +10,8 @@ language_module_map = {
     'KR': korean,
     'FR': french,
     'SP': spanish,
-    'ES': spanish
+    'ES': spanish,
+    'TH': thai,
 }
 
 

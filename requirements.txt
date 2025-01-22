@@ -31,3 +31,4 @@ botocore
 pre-commit
 librosa
 datasets
+pythainlp # thai
