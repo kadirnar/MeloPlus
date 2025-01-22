@@ -58,7 +58,7 @@ setuptools.setup(
         ],
         'meloplus.text.fr_phonemizer': ['*.txt'],
         'meloplus.text.es_phonemizer': ['*.txt'],
-        'meloplus.text': ['*.csv', '*.txt'],
+        'meloplus.text': ['*.tsv', '*.txt'],
     },
     include_package_data=True,
 )
