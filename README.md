@@ -16,7 +16,7 @@
 ## 🛠️ Installation
 
 ```bash
-pip install meloplus
+pip install melotts-plus
 python -m unidic download
 ```
 
