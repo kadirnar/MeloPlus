@@ -12,6 +12,7 @@ from pythainlp.util import thai_to_eng, eng_to_thai
 from meloplus.text.thai_dictionary import english_dictionary, etc_dictionary
 from collections import defaultdict
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -49,7 +50,8 @@ def normalize_english(text):
 # Load the Thai G2P dictionary
 thai_g2p_dict = defaultdict(list)
 
-with open("meloplus/text/wiktionary-23-7-2022-clean.tsv", encoding="utf-8") as f:
+dict_path = os.path.join(os.path.dirname(__file__), "wiktionary-23-7-2022-clean.tsv")
+with open(dict_path, encoding="utf-8") as f:
     for line in f:
         word, phonemes = line.strip().split("\t")
         thai_g2p_dict[word].append(phonemes.split())
