@@ -40,7 +40,7 @@ def get_license():
 
 
 setuptools.setup(
-    name='melottsplus',
+    name='melotts-plus',
     version=get_version(),
     author=get_author(),
     author_email='kadirnardev@gmail.com',

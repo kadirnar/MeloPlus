@@ -8,7 +8,8 @@ speed = 1.0
 
 # English
 text = "Did you ever hear a folk tale about a giant turtle?"
-model = MeloInference(language="EN", device="auto")
+ckpt_path = "G_100000.pth"
+model = MeloInference(language="EN", device="auto", ckpt_path=ckpt_path)
 speaker_ids = model.hps.data.spk2id
 
 # American accent
