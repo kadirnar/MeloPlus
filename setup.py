@@ -40,10 +40,10 @@ def get_license():
 
 
 setuptools.setup(
-    name='meloplus',
+    name='melottsplus',
     version=get_version(),
     author=get_author(),
-    author_email='kadir.nar@hotmail.com',
+    author_email='kadirnardev@gmail.com',
     license=get_license(),
     description="Meloplus: Advanced python library for Melotts",
     long_description=get_long_description(),
