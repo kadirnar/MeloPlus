@@ -19,60 +19,73 @@ from pathlib import Path
 model_cache = {}
 
 
-def get_model_paths(model_id, version):
+def get_model_paths(model_id, version, hf_token=None):
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    cache_dir = base_dir  # Cache dosyalarını proje dizinine kaydet
+    cache_dir = base_dir  # Save cache files in project directory
 
     try:
-        # HuggingFace'den model dosyalarını indir
-        g_path = hf_hub_download(repo_id=model_id, filename=f"G_{version}.pth", cache_dir=cache_dir)
-        d_path = hf_hub_download(repo_id=model_id, filename=f"D_{version}.pth", cache_dir=cache_dir)
-        dur_path = hf_hub_download(repo_id=model_id, filename=f"DUR_{version}.pth", cache_dir=cache_dir)
-        config_path = hf_hub_download(repo_id=model_id, filename="config.json", cache_dir=cache_dir)
+        # Download model files from HuggingFace with token if provided
+        g_path = hf_hub_download(
+            repo_id=model_id, filename=f"G_{version}.pth", cache_dir=cache_dir, token=hf_token)
+        d_path = hf_hub_download(
+            repo_id=model_id, filename=f"D_{version}.pth", cache_dir=cache_dir, token=hf_token)
+        dur_path = hf_hub_download(
+            repo_id=model_id, filename=f"DUR_{version}.pth", cache_dir=cache_dir, token=hf_token)
+        config_path = hf_hub_download(
+            repo_id=model_id, filename="config.json", cache_dir=cache_dir, token=hf_token)
     except Exception as e:
-        raise FileNotFoundError(f"Model dosyaları indirilemedi: {str(e)}")
+        raise FileNotFoundError(f"Could not download model files: {str(e)}")
 
     return g_path, d_path, dur_path, config_path
 
 
-def get_model(model_id, version):
+def get_model(model_id, version, hf_token=None):
     cache_key = f"{model_id}_{version}"
     if cache_key not in model_cache:
-        g_path, d_path, dur_path, config_path = get_model_paths(model_id, version)
+        g_path, d_path, dur_path, config_path = get_model_paths(model_id, version, hf_token)
         model = MeloInference(
             language="EN",  # Default language
             device="auto",
-            use_hf=False,  # Local dosyaları kullanacağız
+            use_hf=False,  # Using local files
             config_path=config_path,
             ckpt_path=g_path)
         model_cache[cache_key] = model
     return model_cache[cache_key]
 
 
-def text_to_speech(text, model_id, version):
+def text_to_speech(text, model_id, version, hf_token=None):
     try:
-        model = get_model(model_id, version)
+        model = get_model(model_id, version, hf_token)
         if model is None:
             return None, "Error: Failed to initialize model"
 
-        # Ses dosyasını oluştur
+        # Create audio file
         output_path = "temp_audio.wav"
         model.tts_to_file(
             text=text,
-            speaker_id=0,  # Varsayılan speaker ID
+            speaker_id=0,  # Default speaker ID
             output_path=output_path,
-            quiet=True  # Gereksiz çıktıları gizle
+            quiet=True  # Hide unnecessary output
         )
 
-        # Dosya yolunu döndür
+        # Return file path
         return output_path, None
     except Exception as e:
         return None, f"Error: {str(e)}"
 
 
 def create_interface():
-    with gr.Blocks() as demo:
-        gr.Markdown("# MeloPlus Text-to-Speech Demo")
+    with gr.Blocks(theme=gr.themes.Monochrome(
+            primary_hue="indigo",
+            secondary_hue="slate",
+            neutral_hue="slate",
+            radius_size=gr.themes.sizes.radius_sm,
+    )) as demo:
+        gr.Markdown(
+            """
+            # MeloPlus Text-to-Speech Demo
+            Transform text into natural-sounding speech using state-of-the-art AI models.
+            """)
 
         with gr.Row():
             with gr.Column():
@@ -80,45 +93,57 @@ def create_interface():
                     label="Model ID",
                     placeholder="Enter model ID (e.g., Vyvo/MeloTTS-Ljspeech)",
                     lines=1,
-                    value="Vyvo/MeloTTS-Ljspeech"  # Varsayılan model
-                )
+                    value="Vyvo/MeloTTS-Ljspeech",  # Default model
+                    container=True)
 
                 version_input = gr.Textbox(
                     label="Model Version",
                     placeholder="Enter version number (e.g., 152000)",
                     lines=1,
-                    value="152000"  # Varsayılan versiyon
-                )
+                    value="152000",  # Default version
+                    container=True)
+
+                hf_token_input = gr.Textbox(
+                    label="HuggingFace Token (Optional)",
+                    placeholder="Enter your HuggingFace token for private models",
+                    lines=1,
+                    type="password",  # Hide token input
+                    container=True)
 
                 text_input = gr.Textbox(
-                    label="Text Input", placeholder="Enter the text you want to convert to speech", lines=3)
+                    label="Text Input",
+                    placeholder="Enter the text you want to convert to speech",
+                    lines=3,
+                    container=True)
 
-                generate_btn = gr.Button("Generate Speech")
+                generate_btn = gr.Button("Generate Speech", variant="primary", scale=1)
 
         with gr.Row():
-            error_output = gr.Textbox(label="Error (if any)")
-            audio_output = gr.Audio(label="Generated Speech", type="filepath")
+            with gr.Column():
+                error_output = gr.Textbox(label="Error (if any)", container=True)
+                audio_output = gr.Audio(label="Generated Speech", type="filepath", container=True)
 
-        # Enter tuşu ile çalıştırma
+        # Run with Enter key
         text_input.submit(
             fn=text_to_speech,
-            inputs=[text_input, model_id_input, version_input],
+            inputs=[text_input, model_id_input, version_input, hf_token_input],
             outputs=[audio_output, error_output])
 
-        # Generate butonu ile çalıştırma
+        # Run with Generate button
         generate_btn.click(
             fn=text_to_speech,
-            inputs=[text_input, model_id_input, version_input],
+            inputs=[text_input, model_id_input, version_input, hf_token_input],
             outputs=[audio_output, error_output])
 
         gr.Markdown(
             """
-        ### Usage Notes:
-        - Enter the HuggingFace model ID (e.g., Vyvo/MeloTTS-Ljspeech)
-        - Enter the model version number (e.g., 152000)
-        - Type the text you want to convert to speech
-        - Click Generate Speech button or press Enter to create the audio
-        """)
+            ### Usage Notes:
+            - Enter the HuggingFace model ID (e.g., Vyvo/MeloTTS-Ljspeech)
+            - Enter the model version number (e.g., 152000)
+            - If using a private model, enter your HuggingFace token
+            - Type the text you want to convert to speech
+            - Click Generate Speech button or press Enter to create the audio
+            """)
 
     return demo
 
