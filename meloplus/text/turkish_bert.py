@@ -1,3 +1,5 @@
+# https://github.com/g-hano/MeloTTS/blob/main/melo/text/turkish_bert.py
+
 import torch
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 import sys

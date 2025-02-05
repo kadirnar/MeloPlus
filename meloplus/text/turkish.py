@@ -1,3 +1,5 @@
+# https://github.com/g-hano/MeloTTS/blob/main/melo/text/turkish.py
+
 import re
 from transformers import AutoTokenizer
 from . import symbols

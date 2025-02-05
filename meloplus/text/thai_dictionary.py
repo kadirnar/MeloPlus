@@ -1,3 +1,4 @@
+# https://github.com/myshell-ai/MeloTTS/pull/117
 etc_dictionary = {
     "1+1": "วันพลัสวัน",
     "2+1": "ทูพลัสวัน",
