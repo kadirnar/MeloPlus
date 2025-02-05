@@ -1,9 +1,7 @@
 import os
-
-os.system('python -m unidic download')
-
 import nltk
 
+os.system('python -m unidic download')
 nltk.download('averaged_perceptron_tagger_eng')
 
 import gradio as gr
@@ -75,75 +73,195 @@ def text_to_speech(text, model_id, version, hf_token=None):
 
 
 def create_interface():
-    with gr.Blocks(theme=gr.themes.Monochrome(
-            primary_hue="indigo",
-            secondary_hue="slate",
-            neutral_hue="slate",
-            radius_size=gr.themes.sizes.radius_sm,
-    )) as demo:
-        gr.Markdown(
-            """
-            # MeloPlus Text-to-Speech Demo
-            Transform text into natural-sounding speech using state-of-the-art AI models.
-            """)
+    # Custom CSS for better styling
+    custom_css = """
+        :root {
+            --bg-dark: #1a1b2e;
+            --bg-darker: #141625;
+            --accent-primary: #7aa2f7;
+            --accent-secondary: #89ddff;
+            --text-primary: #c0caf5;
+            --text-secondary: #9aa5ce;
+            --border-color: #1d2033;
+        }
 
-        with gr.Row():
-            with gr.Column():
-                model_id_input = gr.Textbox(
-                    label="Model ID",
-                    placeholder="Enter model ID (e.g., Vyvo/MeloTTS-Ljspeech)",
-                    lines=1,
-                    value="Vyvo/MeloTTS-Ljspeech",  # Default model
-                    container=True)
+        .gradio-container {
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1b35 50%, var(--bg-darker) 100%) !important;
+        }
 
-                version_input = gr.Textbox(
-                    label="Model Version",
-                    placeholder="Enter version number (e.g., 152000)",
-                    lines=1,
-                    value="152000",  # Default version
-                    container=True)
+        .container {
+            max-width: 1100px !important;
+            margin: auto;
+            padding: 1rem;
+        }
 
-                hf_token_input = gr.Textbox(
-                    label="HuggingFace Token (Optional)",
-                    placeholder="Enter your HuggingFace token for private models",
-                    lines=1,
-                    type="password",  # Hide token input
-                    container=True)
+        h1.main-title {
+            font-size: 3.5rem !important;
+            font-weight: 600 !important;
+            text-align: center !important;
+            margin: 1rem auto 2rem auto !important;
+            padding: 2rem !important;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
 
-                text_input = gr.Textbox(
-                    label="Text Input",
-                    placeholder="Enter the text you want to convert to speech",
-                    lines=3,
-                    container=True)
+        /* Force center alignment for markdown content */
+        h1.main-title > :first-child {
+            text-align: center !important;
+            width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
 
-                generate_btn = gr.Button("Generate Speech", variant="primary", scale=1)
+        /* Center the emoji with the text */
+        h1.main-title span {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 0.5rem !important;
+        }
 
-        with gr.Row():
-            with gr.Column():
-                error_output = gr.Textbox(label="Error (if any)", container=True)
-                audio_output = gr.Audio(label="Generated Speech", type="filepath", container=True)
+        .header-subtitle {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+        .input-group {
+            background: var(--bg-darker);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            margin-bottom: 0.75rem;
+        }
+        .output-group {
+            background: var(--bg-darker);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            margin-bottom: 0.75rem;
+        }
+        .info-box {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .info-box ol {
+            color: var(--text-secondary);
+            margin-bottom: 0;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--accent-primary);
+        }
+        .custom-button {
+            background: var(--accent-primary) !important;
+            border: none !important;
+            color: var(--bg-darker) !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 0.3rem !important;
+            font-weight: 600 !important;
+            transition: all 0.2s ease !important;
+        }
+        .custom-button:hover {
+            transform: translateY(-1px) !important;
+            filter: brightness(110%) !important;
+            box-shadow: 0 4px 12px rgba(122, 162, 247, 0.2) !important;
+        }
+        .compact-input {
+            margin-bottom: 0.5rem !important;
+        }
+    """
 
-        # Run with Enter key
+    with gr.Blocks(theme=gr.themes.Soft(
+            primary_hue=gr.themes.colors.blue,
+            secondary_hue=gr.themes.colors.purple,
+            neutral_hue=gr.themes.colors.gray,
+    ), css=custom_css) as demo:
+
+        # Header Section
+        gr.Markdown("# 🎵 MeloPlus Text-to-Speech Demo", elem_classes=["main-title"])
+
+        # Main Content
+        with gr.Row(equal_height=True):
+            # Left Column - Inputs
+            with gr.Column(scale=1):
+                with gr.Group(elem_classes="input-group"):
+                    gr.HTML('<div class="section-title">⚙️ Configuration</div>')
+
+                    model_id_input = gr.Textbox(
+                        label="Model ID",
+                        placeholder="e.g., Vyvo/MeloTTS-Ljspeech",
+                        value="Vyvo/MeloTTS-Ljspeech",
+                        container=True,
+                        elem_classes="compact-input")
+
+                    version_input = gr.Textbox(
+                        label="Version",
+                        placeholder="e.g., 152000",
+                        value="152000",
+                        container=True,
+                        elem_classes="compact-input")
+
+                    hf_token_input = gr.Textbox(
+                        label="🔑 HF Token",
+                        placeholder="For private models",
+                        type="password",
+                        container=True,
+                        elem_classes="compact-input")
+
+                    text_input = gr.Textbox(
+                        label="Text Input",
+                        placeholder="Enter text to convert...",
+                        lines=3,
+                        container=True,
+                        elem_classes="compact-input")
+
+                    generate_btn = gr.Button("🔊 Generate", elem_classes="custom-button")
+
+            # Right Column - Outputs
+            with gr.Column(scale=1):
+                # Audio Output Section
+                with gr.Group(elem_classes="output-group"):
+                    gr.HTML('<div class="section-title">🎧 Output</div>')
+
+                    audio_output = gr.Audio(label="", type="filepath", container=True)
+
+                    error_output = gr.Textbox(label="Status", container=True)
+
+                # Guide Section
+                with gr.Group(elem_classes="info-box"):
+                    gr.HTML(
+                        """
+                        <div class="section-title">💡 Quick Tips</div>
+                        <ol style="margin: 0; padding-left: 1.2rem;">
+                            <li>Enter model ID or use default</li>
+                            <li>Set version number</li>
+                            <li>Add HF token for private models</li>
+                            <li>Enter text and click Generate</li>
+                        </ol>
+                        """)
+
+        # Event Handlers
         text_input.submit(
             fn=text_to_speech,
             inputs=[text_input, model_id_input, version_input, hf_token_input],
             outputs=[audio_output, error_output])
 
-        # Run with Generate button
         generate_btn.click(
             fn=text_to_speech,
             inputs=[text_input, model_id_input, version_input, hf_token_input],
             outputs=[audio_output, error_output])
-
-        gr.Markdown(
-            """
-            ### Usage Notes:
-            - Enter the HuggingFace model ID (e.g., Vyvo/MeloTTS-Ljspeech)
-            - Enter the model version number (e.g., 152000)
-            - If using a private model, enter your HuggingFace token
-            - Type the text you want to convert to speech
-            - Click Generate Speech button or press Enter to create the audio
-            """)
 
     return demo
 
