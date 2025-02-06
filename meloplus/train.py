@@ -11,6 +11,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+from huggingface_hub import HfApi
 
 logging.getLogger("numba").setLevel(logging.WARNING)
 import commons
@@ -18,8 +19,8 @@ import utils
 from data_utils import DistributedBucketSampler, TextAudioSpeakerCollate, TextAudioSpeakerLoader
 from losses import discriminator_loss, feature_loss, generator_loss, kl_loss
 from mel_processing import mel_spectrogram_torch, spec_to_mel_torch
-from melo.download_utils import load_pretrain_model
-from models import DurationDiscriminator, MultiPeriodDiscriminator, SynthesizerTrn
+from meloplus.download_utils import load_pretrain_model
+from meloplus.models import DurationDiscriminator, MultiPeriodDiscriminator, SynthesizerTrn
 from text.symbols import symbols
 
 torch.backends.cuda.matmul.allow_tf32 = True
@@ -123,7 +124,7 @@ def run():
         **hps.model,
     ).cuda(rank)
 
-    net_d = MultiPeriodDiscriminator(hps.model.use_spectral_norm).cuda(rank)
+    net_d = MultiPeriodDiscriminator(use_spectral_norm=True).cuda(rank)
     optim_g = torch.optim.AdamW(
         filter(lambda p: p.requires_grad, net_g.parameters()),
         hps.train.learning_rate,
@@ -260,6 +261,10 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
     net_d.train()
     if net_dur_disc is not None:
         net_dur_disc.train()
+
+    api = HfApi()
+    repo_id = "Vyvo/MeloTTS-Ljspeech-V2"
+
     for batch_idx, (
             x,
             x_lengths,
@@ -354,8 +359,7 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
         optim_d.zero_grad()
         scaler.scale(loss_disc_all).backward()
         scaler.unscale_(optim_d)
-        # grad_norm_d = commons.clip_grad_value_(net_d.parameters(), None) # check
-        grad_norm_d = commons.clip_grad_value_(net_d.parameters(), 200)
+        grad_norm_d = commons.clip_grad_value_(net_d.parameters(), None)
         scaler.step(optim_d)
 
         with autocast(enabled=hps.train.fp16_run):
@@ -377,8 +381,7 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
         optim_g.zero_grad()
         scaler.scale(loss_gen_all).backward()
         scaler.unscale_(optim_g)
-        # grad_norm_g = commons.clip_grad_value_(net_g.parameters(), None) # check
-        grad_norm_g = commons.clip_grad_value_(net_g.parameters(), 500)
+        grad_norm_g = commons.clip_grad_value_(net_g.parameters(), None)
 
         scaler.step(optim_g)
         scaler.update()
@@ -406,6 +409,12 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
                 scalar_dict.update({"loss/g/{}".format(i): v for i, v in enumerate(losses_gen)})
                 scalar_dict.update({"loss/d_r/{}".format(i): v for i, v in enumerate(losses_disc_r)})
                 scalar_dict.update({"loss/d_g/{}".format(i): v for i, v in enumerate(losses_disc_g)})
+
+                if net_dur_disc is not None:
+                    scalar_dict.update({
+                        "loss/dur_disc/total": loss_dur_disc_all,
+                        "loss/dur_gen/total": loss_dur_gen,
+                    })
 
                 image_dict = {
                     "slice/mel_org": utils.plot_spectrogram_to_numpy(y_mel[0].data.cpu().numpy()),
@@ -444,13 +453,28 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
                         epoch,
                         os.path.join(hps.model_dir, "DUR_{}.pth".format(global_step)),
                     )
-                keep_ckpts = getattr(hps.train, "keep_ckpts", 5)
-                if keep_ckpts > 0:
-                    utils.clean_checkpoints(
-                        path_to_models=hps.model_dir,
-                        n_ckpts_to_keep=keep_ckpts,
-                        sort_by_time=True,
-                    )
+
+                if global_step % 10000 == 0:
+                    try:
+                        logger.info(f"Pushing checkpoint to Hugging Face Hub at step {global_step}")
+
+                        checkpoint_files = [
+                            os.path.join(hps.model_dir, f"G_{global_step}.pth"),
+                            os.path.join(hps.model_dir, f"D_{global_step}.pth")
+                        ]
+                        if net_dur_disc is not None:
+                            checkpoint_files.append(os.path.join(hps.model_dir, f"DUR_{global_step}.pth"))
+
+                        for checkpoint_file in checkpoint_files:
+                            api.upload_file(
+                                path_or_fileobj=checkpoint_file,
+                                path_in_repo=os.path.basename(checkpoint_file),
+                                repo_id=repo_id,
+                                repo_type="model",
+                                commit_message=f"Update model checkpoint at step {global_step}")
+                        logger.info("Successfully pushed checkpoint to Hugging Face Hub")
+                    except Exception as e:
+                        logger.error(f"Failed to push checkpoint to Hugging Face Hub: {e}")
 
         global_step += 1
 

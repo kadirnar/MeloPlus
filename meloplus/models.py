@@ -594,7 +594,7 @@ class DiscriminatorS(torch.nn.Module):
 
 class MultiPeriodDiscriminator(torch.nn.Module):
 
-    def __init__(self, use_spectral_norm=False):
+    def __init__(self, use_spectral_norm=True):
         super().__init__()
         periods = [2, 3, 5, 7, 11]
 

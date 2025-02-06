@@ -10,11 +10,13 @@ from text.cleaner import clean_text_bert
 from text.symbols import num_languages, num_tones, symbols
 from tqdm import tqdm
 
+import meloplus
+
 
 @click.command()
 @click.option(
     "--metadata",
-    default="data/example/metadata.list",
+    default="meloplus/data/example/metadata.list",
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option("--cleaned-path", default=None)
@@ -22,7 +24,7 @@ from tqdm import tqdm
 @click.option("--val-path", default=None)
 @click.option(
     "--config_path",
-    default="configs/config.json",
+    default="meloplus/configs/config.json",
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option("--val-per-spk", default=4)
